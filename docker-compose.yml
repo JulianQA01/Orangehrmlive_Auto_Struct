@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  test-runner:
+    build: .
+    volumes:
+      - .:/app
+
+    command: pytest tests/test_login.py
