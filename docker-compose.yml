@@ -4,5 +4,9 @@ services:
     build: .
     volumes:
       - .:/app
-
+    environment:
+      - CHROME_BIN=/usr/bin/chromium
+      - CHROME_DRIVER=/usr/bin/chromedriver
     command: pytest tests/test_login.py
+    # Ensure we have enough time to start the browser
+    entrypoint: ["pytest", "tests/test_login.py"]

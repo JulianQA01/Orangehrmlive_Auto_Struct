@@ -1,58 +1,53 @@
-# The builder image, used to build the virtual environment and install dependencies
-FROM python:3.12-slim-bookworm AS builder
-
-# Install dependencies and Chromium
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    unzip \
-    xvfb \
-    libxi6 \
-    libgconf-2-4 \
-    chromium \
-    chromium-driver \
-    && apt-get clean
-
-# Set environment variables for Chromium
-ENV CHROME_BIN=/usr/bin/chromium \
-    CHROME_DRIVER=/usr/bin/chromedriver
-
-# Set PYTHONPATH so that Python can find our app code
-ENV PYTHONPATH=/app
-
-# Set working directory
-WORKDIR /app
-
-# Copy the code
-COPY . .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Final runtime image
 FROM python:3.12-slim-bookworm
 
-# Install Chromium and ChromeDriver
+# Working directory
+WORKDIR /app
+
+# Install necessary system dependencies including Chrome and Chromedriver
 RUN apt-get update && apt-get install -y \
+    gettext \
+    vim \
+    curl \
+    unzip \
+    wget \
     chromium \
     chromium-driver \
+    libnss3 \
+    libgdk-pixbuf2.0-0 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libgbm1 \
+    libxcomposite1 \
+    libxrandr2 \
+    libxss1 \
+    libxtst6 \
+    fonts-liberation \
     && apt-get clean
 
-# Set environment variables for Chromium
+# Create and activate virtual environment
+RUN python -m venv /root/.venv
+
+# Install pip and Python dependencies
+RUN /root/.venv/bin/pip install --upgrade pip
+
+# Copy requirements and install the dependencies
+COPY requirements.txt .
+RUN /root/.venv/bin/pip install -r requirements.txt
+
+# Set Python path for runtime
+ENV PYTHONPATH=/app:$PYTHONPATH
+
+# Setup the virtual environment
+ENV VIRTUAL_ENV=/root/.venv \
+    PATH="/root/.venv/bin:$PATH"
+
+# Copy the application code (including tests and utils)
+COPY . .
+
+# Set Chrome options for headless execution
 ENV CHROME_BIN=/usr/bin/chromium \
     CHROME_DRIVER=/usr/bin/chromedriver
 
-# Set PYTHONPATH so that Python can find our app code
-ENV PYTHONPATH=/app
-
-# Set working directory
-WORKDIR /app
-
-# Copy the code and virtual environment from the builder
-COPY --from=builder /app /app
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Run default cmd
+# Default command to run the tests
 CMD ["pytest", "tests/test_login.py"]

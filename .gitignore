@@ -24,5 +24,6 @@ Thumbs.db
 .LSOverride
 
 .git/
+.git-robot
 
 .env
