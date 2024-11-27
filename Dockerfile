@@ -45,7 +45,7 @@ ENV VIRTUAL_ENV=/root/.venv \
 # Copy the application code (including tests and utils)
 COPY . .
 
-# Set Chrome options for headless execution
+# Set Chrome options for execution
 ENV CHROME_BIN=/usr/bin/chromium \
     CHROME_DRIVER=/usr/bin/chromedriver
 
